@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<head>
+    <title>Blackjack</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <h1>Blackjack</h1>
+    <div class="game-area">
+        <div class="player">
+            <h2>Player</h2>
+            <div class="hand">
+                <div class="card" id="player-cards">A♠, K♠</div>
+                <p id="total-el">Total: 21</p>
+            </div>
+        </div>
+        <div class="status" id="player-status">Start the game!</div>
+        <div class="player">
+            <h2>Dealer</h2>
+            <div class="hand">
+                <div class="card" id="dealer-cards">9♣, ?</div>
+                <p id="dealer-total">Total: 9 + ?</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="game-buttons">
+        <button id="game-control">Start Game</button>
+        <button id="stand-el">Stand</button>
+        </div>
+        <div class="bet">
+            <p>100$</p>
+            <button>+10$</button>
+            <button>+25$</button>
+            <button>-10$</button>
+            <button>-25$</button>
+            <button>Bet</button>
+        </div>
+    </div>
+
+    <div class="balance">
+        <h2 class="balance">Balance: $100</h2>
+    </div>
+</body>

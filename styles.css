@@ -1,0 +1,64 @@
+body {
+    background-image: url('assets/images/table.png');
+    background-size: cover;
+    color: white;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+h1 {
+    color: goldenrod;
+    font-size: 3.5rem;
+}
+
+h2 {
+    color: goldenrod;
+    font-size: 2.5rem;
+}
+
+button {
+    background-color: goldenrod;
+    border: none;
+    color: #016f32;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.game-area {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    margin-top: 20px;
+}
+
+.hand {
+    border: 2px solid goldenrod;
+    border-radius: 10px;
+    padding: 10px;
+    width: 300px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.status {
+    margin: auto;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 250px;
+}
+
+.bet {
+    margin-top: 1rem;
+    border: 2px solid goldenrod;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.balance {
+    font-size: 1.7rem;
+}
