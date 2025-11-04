@@ -11,7 +11,6 @@ let game = {
  dealerCards: [0, 0],
  sum: 0,
  dealerSum: 0,
- state: ""
 }
 let isAlive = false
 let hasBlackJack = false
