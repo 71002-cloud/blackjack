@@ -6,27 +6,34 @@ const dealerTotalEl = document.getElementById("dealer-total")
 const gameControlEl = document.getElementById("game-control")
 const standEl = document.getElementById("stand-el")
 
-let playerCards = [0, 0]
-let dealerCards = [0, 0]
-let sum = 0
-let dealerSum = 0
+let game = {
+ playerCards: [0, 0],
+ dealerCards: [0, 0],
+ sum: 0,
+ dealerSum: 0,
+ state: ""
+}
 let isAlive = false
 let hasBlackJack = false
 
-
 function renderGame() {
-    if (sum === 0) {
+    if (game.sum === 0) {
         playerStatusEl.textContent = "Start the game!"
         gameControlEl.textContent = "Start Game"
-    }
-    else if (sum < 21) {
+    } else if (game.sum < 21) {
         playerStatusEl.textContent = "Do you want to draw a new card?"
         gameControlEl.textContent = "Hit"
         isAlive = true
-    } else if (sum === 21) {
+    } else if (game.sum === 21) {
         playerStatusEl.textContent = "You've got Blackjack! Wanna play again?"
         gameControlEl.textContent = "Play again"
         hasBlackJack = true
+        stand()
+        isAlive = false
+    } else if (game.sum > 21) {
+        playerStatusEl.textContent = "You're out of the game! Wanna try again?"
+        gameControlEl.textContent = "Try again"
+        stand()
         isAlive = false
     } else {
         playerStatusEl.textContent = "You're lost! Wanna try again?"
@@ -36,7 +43,8 @@ function renderGame() {
 }
 
 gameControlEl.addEventListener("click", function() {
-    if (sum === 0 || hasBlackJack === true || isAlive === false) {
+    if (game.sum === 0 || hasBlackJack === true || isAlive === false) {
+        renderGame()
         startGame()
         renderGame()
     } else if (isAlive === true && hasBlackJack === false) {
@@ -51,40 +59,66 @@ standEl.addEventListener("click", function() {
 })
 
 function startGame() {
-    playerCards = [0, 0]
-    dealerCards = [0, 0]
-    playerCards[0] = Math.floor(Math.random() * 11) + 1
-    playerCards[1] = Math.floor(Math.random() * 11) + 1
-    sum = playerCards[0] + playerCards[1]
-    dealerCards[0] = Math.floor(Math.random() * 11) + 1
-    dealerSum = dealerCards[0]
+    hasBlackJack = false
+    console.log(game.playerCards, game.dealerCards)
+    game.playerCards = [0, 0]
+    game.dealerCards = [0, 0]
+    console.log(game.playerCards, game.dealerCards)
+    game.playerCards[0] = Math.floor(Math.random() * 11) + 1
+    game.playerCards[1] = Math.floor(Math.random() * 11) + 1
+    game.sum = game.playerCards[0] + game.playerCards[1]
+    game.dealerCards[0] = Math.floor(Math.random() * 11) + 1
+    game.dealerSum = game.dealerCards[0]
 
-    dealerCardsEl.textContent = dealerCards.join(", ")
-    dealerTotalEl.textContent = "Total: " + dealerSum + "+"
-    playerCardsEl.textContent = playerCards.join(", ")
-    totalEl.textContent = "Total: " + sum
+    dealerCardsEl.textContent = game.dealerCards.join(", ")
+    dealerTotalEl.textContent = "Total: " + game.dealerSum + "+"
+    playerCardsEl.textContent = game.playerCards.join(", ")
+    totalEl.textContent = "Total: " + game.sum
 }
 
 function hit() {
     let newCard = Math.floor(Math.random() * 11) + 1
-    playerCards.push(newCard)
-    sum += newCard
-    playerCardsEl.textContent = playerCards.join(", ")
-    totalEl.textContent = "Total: " + sum
+    game.playerCards.push(newCard)
+    game.sum += newCard
+    playerCardsEl.textContent = game.playerCards.join(", ")
+    totalEl.textContent = "Total: " + game.sum
     renderGame()
 }
 
 function stand() {
-    if (isAlive === true && hasBlackJack === false && dealerSum < 17) {
-        dealerCards[1] = Math.floor(Math.random() * 11) + 1
-        dealerSum = dealerCards[0] + dealerCards[1]
-        dealerCardsEl.textContent = dealerCards.join(", ")
-        dealerTotalEl.textContent = "Total: " + dealerSum
-    } while (dealerSum < 17) {
+    if (isAlive === true && hasBlackJack === false && game.dealerSum < 17) {
+        game.dealerCards[1] = Math.floor(Math.random() * 11) + 1
+        game.dealerSum = game.dealerCards[0] + game.dealerCards[1]
+        dealerCardsEl.textContent = game.dealerCards.join(", ")
+        dealerTotalEl.textContent = "Total: " + game.dealerSum
+        isAlive = false
+    } while (game.dealerSum < 17) {
         let newCard = Math.floor(Math.random() * 11) + 1
-        dealerCards.push(newCard)
-        dealerSum += newCard
-        dealerCardsEl.textContent = dealerCards.join(", ")
-        dealerTotalEl.textContent = "Total: " + dealerSum
+        game.dealerCards.push(newCard)
+        game.dealerSum += newCard
+        dealerCardsEl.textContent = game.dealerCards.join(", ")
+        dealerTotalEl.textContent = "Total: " + game.dealerSum
+    }
+
+    if (game.dealerSum < 21 && game.dealerSum > game.sum) {
+        playerStatusEl.textContent = "You're lost! Wanna try again?"
+        gameControlEl.textContent = "Try again"
+        isAlive = false
+    } else if (game.sum < 21 && game.dealerSum < game.sum) {
+        playerStatusEl.textContent = "You win! Wanna play again?"
+        gameControlEl.textContent = "Play again"
+        isAlive = false
+    } else if (game.dealerSum > 21 && game.sum > 21) {
+        playerStatusEl.textContent = "You busts! Wanna play again?"
+        gameControlEl.textContent = "Try again"
+        isAlive = false
+    } else if (game.dealerSum === game.sum) {
+        playerStatusEl.textContent = "It's a tie! Wanna play again?"
+        gameControlEl.textContent = "Play again"
+        isAlive = false
+    } else if (game.dealerSum > 21) {
+        playerStatusEl.textContent = "Dealer busts! You win! Wanna play again?"
+        gameControlEl.textContent = "Play again"
+        isAlive = false
     }
 }

@@ -62,3 +62,8 @@ button {
 .balance {
     font-size: 1.7rem;
 }
+
+button:hover {
+    background-color: #ffdb4d;
+    cursor: pointer;
+}
