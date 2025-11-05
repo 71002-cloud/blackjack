@@ -14,6 +14,7 @@ const betPlus25El = document.getElementById("bet-plus-25")
 const betMinus10El = document.getElementById("bet-minus-10")
 const betMinus25El = document.getElementById("bet-minus-25")
 const betConfirmEl = document.getElementById("bet-confirm")
+const betAllInEl = document.getElementById("bet-all-in")
 
 // Game Info
 let gameInfo = {
@@ -48,7 +49,7 @@ function createGame() {
 function waitingState() {
     gameInfo.bettingAllowed = true
     return {
-        startGame(setState) {
+        async startGame(setState) {
             bettingConfirm()
             playerStatusEl.textContent = "Game started"
             gameControlEl.textContent = "Hit"
@@ -63,6 +64,7 @@ function waitingState() {
             gameInfo.dealerSum = gameInfo.dealerCards[0]
             dealerTotalEl.textContent = "Total: " + gameInfo.dealerSum + "+"
 
+            await slowDown(500)
             if (gameInfo.sum > 21 || gameInfo.sum === 21) {
                 setState(dealerTurnState())
             } else {
@@ -97,8 +99,9 @@ function playerTurnState() {
 
 function dealerTurnState() {
     return {
-        enter(setState) {
+        async enter(setState) {
             playerStatusEl.textContent = "Player stands"
+            await slowDown(1000)
             playerStatusEl.textContent = "dealer's turn"
             const newCard = randomCard()
             gameInfo.dealerCards.push(newCard)
@@ -107,6 +110,7 @@ function dealerTurnState() {
             dealerTotalEl.textContent = "Total: " + gameInfo.dealerSum
 
             while (gameInfo.dealerSum < 17) {
+            await slowDown(1000)
             const newCard = randomCard()
             gameInfo.dealerCards.push(newCard)
             gameInfo.dealerSum += newCard
@@ -171,6 +175,10 @@ function bettingConfirm() {
     }
 }
 
+function slowDown (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const game = createGame()
 
 // Event Listeners 
@@ -214,6 +222,13 @@ betMinus10El.addEventListener("click", function() {
 betMinus25El.addEventListener("click", function() {
     if (currentBet >= 25 && gameInfo.bettingAllowed) {
         currentBet -= 25
+        betAmountEl.textContent = "$" + currentBet
+    }
+})
+
+betAllInEl.addEventListener("click", function() {
+    if (gameInfo.bettingAllowed) {
+        currentBet = balance
         betAmountEl.textContent = "$" + currentBet
     }
 })
