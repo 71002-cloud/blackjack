@@ -1,3 +1,4 @@
+// Game Elements 
 const playerStatusEl = document.getElementById("player-status")
 const playerCardsEl = document.getElementById("player-cards")
 const dealerCardsEl = document.getElementById("dealer-cards")
@@ -5,119 +6,218 @@ const totalEl = document.getElementById("total-el")
 const dealerTotalEl = document.getElementById("dealer-total")
 const gameControlEl = document.getElementById("game-control")
 const standEl = document.getElementById("stand-el")
+// bet Elements
+const betAmountEl = document.getElementById("bet-amount")
+const balanceAmountEl = document.getElementById("balance-amount-el")
+const betPlus10El = document.getElementById("bet-plus-10")
+const betPlus25El = document.getElementById("bet-plus-25")
+const betMinus10El = document.getElementById("bet-minus-10")
+const betMinus25El = document.getElementById("bet-minus-25")
+const betConfirmEl = document.getElementById("bet-confirm")
 
-let game = {
- playerCards: [0, 0],
- dealerCards: [0, 0],
+// Game Info
+let gameInfo = {
+ playerCards: [],
+ dealerCards: [],
  sum: 0,
  dealerSum: 0,
+ renderWinCondition: "",
+ playerState: "",
+ bettingAllowed: false,
 }
-let isAlive = false
-let hasBlackJack = false
+
+// Game
+function createGame() {
+    let state = waitingState()
+
+    function setState(newState) {
+        state = newState
+        if (state.enter) {
+            state.enter(setState)
+        }
+    }
+
+    return {
+        startGame: () => state.startGame(setState),
+        hit: () => state.hit(setState),
+        stand: () => state.stand(setState),
+        getState: () => state
+    }
+}
+
+function waitingState() {
+    gameInfo.bettingAllowed = true
+    return {
+        startGame(setState) {
+            bettingConfirm()
+            playerStatusEl.textContent = "Game started"
+            gameControlEl.textContent = "Hit"
+ 
+            gameInfo.playerCards = [randomCard(), randomCard()]
+            gameInfo.sum = gameInfo.playerCards[0] + gameInfo.playerCards[1]
+            totalEl.textContent = "Total: " + gameInfo.sum
+            playerCardsEl.textContent = gameInfo.playerCards.join(", ")
+
+            gameInfo.dealerCards = [randomCard()]
+            dealerCardsEl.textContent = gameInfo.dealerCards.join(", ")
+            gameInfo.dealerSum = gameInfo.dealerCards[0]
+            dealerTotalEl.textContent = "Total: " + gameInfo.dealerSum + "+"
+
+            if (gameInfo.sum > 21 || gameInfo.sum === 21) {
+                setState(dealerTurnState())
+            } else {
+                setState(playerTurnState())
+            }
+        },
+        hit(setState) {},
+        stand(setState) {},
+    }
+}
+
+function playerTurnState() {
+    return {
+        gameStart(setState) {},
+        hit(setState) {
+            playerStatusEl.textContent = "Player hits"
+            const newCard = randomCard()
+            gameInfo.playerCards.push(newCard)
+            gameInfo.sum += newCard
+            totalEl.textContent = "Total: " + gameInfo.sum
+            playerCardsEl.textContent = gameInfo.playerCards.join(", ")
+            
+            if (gameInfo.sum > 21 || gameInfo.sum === 21) {
+                setState(dealerTurnState())
+            }
+        },
+        stand(setState) {
+            setState(dealerTurnState())
+        }
+    }
+}
+
+function dealerTurnState() {
+    return {
+        enter(setState) {
+            playerStatusEl.textContent = "Player stands"
+            playerStatusEl.textContent = "dealer's turn"
+            const newCard = randomCard()
+            gameInfo.dealerCards.push(newCard)
+            gameInfo.dealerSum += newCard
+            dealerCardsEl.textContent = gameInfo.dealerCards.join(", ")
+            dealerTotalEl.textContent = "Total: " + gameInfo.dealerSum
+
+            while (gameInfo.dealerSum < 17) {
+            const newCard = randomCard()
+            gameInfo.dealerCards.push(newCard)
+            gameInfo.dealerSum += newCard
+            dealerCardsEl.textContent = gameInfo.dealerCards.join(", ")
+            dealerTotalEl.textContent = "Total: " + gameInfo.dealerSum
+            }
+            setState(gameOverState())
+        },
+        gameStart(setState) {},
+        hit(setState) {},
+        stand(setState) {}
+    }
+}
+
+function gameOverState() {
+    return {
+        enter(setState) {
+            playerStatusEl.textContent = "Game over"
+            gameControlEl.textContent = "Start Game"
+            gameInfo.renderWinCondition = renderGame()
+            setState(waitingState())
+        },
+        gameStart(setState) {},
+        hit(setState) {},
+        stand(setState) {}
+    }
+}
+
+// Game helper functions
+function randomCard() {
+    const randomNumber = Math.floor(Math.random() * 13) + 1
+    if (randomNumber > 10) {
+        return 10
+    }
+    return randomNumber
+}
 
 function renderGame() {
-    if (game.sum === 0) {
-        playerStatusEl.textContent = "Start the game!"
-        gameControlEl.textContent = "Start Game"
-    } else if (game.sum < 21) {
-        playerStatusEl.textContent = "Do you want to draw a new card?"
-        gameControlEl.textContent = "Hit"
-        isAlive = true
-    } else if (game.sum === 21) {
-        playerStatusEl.textContent = "You've got Blackjack! Wanna play again?"
-        gameControlEl.textContent = "Play again"
-        hasBlackJack = true
-        stand()
-        isAlive = false
-    } else if (game.sum > 21) {
-        playerStatusEl.textContent = "You're out of the game! Wanna try again?"
-        gameControlEl.textContent = "Try again"
-        stand()
-        isAlive = false
-    } else {
-        playerStatusEl.textContent = "You're lost! Wanna try again?"
-        gameControlEl.textContent = "Try again"
-        isAlive = false
+    if (gameInfo.sum > 21 || (gameInfo.sum < gameInfo.dealerSum && gameInfo.dealerSum <= 21)) {
+        playerStatusEl.textContent = "You lose!"
+        gameInfo.playerState = "lost"
+    } else if (gameInfo.sum === gameInfo.dealerSum) {
+        playerStatusEl.textContent = "It's a tie!"
+        gameInfo.playerState = "tie"
+        balance += currentBet
+    } else if (gameInfo.sum <= 21 && (gameInfo.sum > gameInfo.dealerSum || gameInfo.dealerSum > 21)) {
+        playerStatusEl.textContent = "You win!"
+        gameInfo.playerState = "won"
+        balance += currentBet * 2
+    }
+    currentBet = 0
+    balanceAmountEl.textContent = "Balance: $" + balance
+    betAmountEl.textContent = "$" + currentBet
+    console.log(gameInfo.playerState)
+}
+
+function bettingConfirm() {
+    if (currentBet > 0 && gameInfo.bettingAllowed) {
+        balance -= currentBet
+        balanceAmountEl.textContent = "Balance: $" + balance
+        gameInfo.bettingAllowed = false
     }
 }
 
+const game = createGame()
+
+// Event Listeners 
 gameControlEl.addEventListener("click", function() {
-    if (game.sum === 0 || hasBlackJack === true || isAlive === false) {
-        renderGame()
-        startGame()
-        renderGame()
-    } else if (isAlive === true && hasBlackJack === false) {
-        hit()
-    } else {
-        console.log("Error")
-    }
+    game.hit()
+    game.startGame()
 })
 
 standEl.addEventListener("click", function() {
-    stand()
+    game.stand()
 })
 
-function startGame() {
-    hasBlackJack = false
-    console.log(game.playerCards, game.dealerCards)
-    game.playerCards = [0, 0]
-    game.dealerCards = [0, 0]
-    console.log(game.playerCards, game.dealerCards)
-    game.playerCards[0] = Math.floor(Math.random() * 11) + 1
-    game.playerCards[1] = Math.floor(Math.random() * 11) + 1
-    game.sum = game.playerCards[0] + game.playerCards[1]
-    game.dealerCards[0] = Math.floor(Math.random() * 11) + 1
-    game.dealerSum = game.dealerCards[0]
+// Bet
+let balance = 100
+let currentBet = 0
+ 
+betAmountEl.textContent = "$" + currentBet
+balanceAmountEl.textContent = "Balance: $" + balance
 
-    dealerCardsEl.textContent = game.dealerCards.join(", ")
-    dealerTotalEl.textContent = "Total: " + game.dealerSum + "+"
-    playerCardsEl.textContent = game.playerCards.join(", ")
-    totalEl.textContent = "Total: " + game.sum
-}
+betPlus10El.addEventListener("click", function() {
+    if (balance - currentBet >= 10 && gameInfo.bettingAllowed) {
+        currentBet += 10
+        betAmountEl.textContent = "$" + currentBet
+    } 
+}) 
 
-function hit() {
-    let newCard = Math.floor(Math.random() * 11) + 1
-    game.playerCards.push(newCard)
-    game.sum += newCard
-    playerCardsEl.textContent = game.playerCards.join(", ")
-    totalEl.textContent = "Total: " + game.sum
-    renderGame()
-}
-
-function stand() {
-    if (isAlive === true && hasBlackJack === false && game.dealerSum < 17) {
-        game.dealerCards[1] = Math.floor(Math.random() * 11) + 1
-        game.dealerSum = game.dealerCards[0] + game.dealerCards[1]
-        dealerCardsEl.textContent = game.dealerCards.join(", ")
-        dealerTotalEl.textContent = "Total: " + game.dealerSum
-        isAlive = false
-    } while (game.dealerSum < 17) {
-        let newCard = Math.floor(Math.random() * 11) + 1
-        game.dealerCards.push(newCard)
-        game.dealerSum += newCard
-        dealerCardsEl.textContent = game.dealerCards.join(", ")
-        dealerTotalEl.textContent = "Total: " + game.dealerSum
+betPlus25El.addEventListener("click", function() {
+    if (balance - currentBet >= 25 && gameInfo.bettingAllowed) {
+        currentBet += 25
+        betAmountEl.textContent = "$" + currentBet
     }
+})
 
-    if (game.dealerSum < 21 && game.dealerSum > game.sum) {
-        playerStatusEl.textContent = "You're lost! Wanna try again?"
-        gameControlEl.textContent = "Try again"
-        isAlive = false
-    } else if (game.sum < 21 && game.dealerSum < game.sum) {
-        playerStatusEl.textContent = "You win! Wanna play again?"
-        gameControlEl.textContent = "Play again"
-        isAlive = false
-    } else if (game.dealerSum > 21 && game.sum > 21) {
-        playerStatusEl.textContent = "You busts! Wanna play again?"
-        gameControlEl.textContent = "Try again"
-        isAlive = false
-    } else if (game.dealerSum === game.sum) {
-        playerStatusEl.textContent = "It's a tie! Wanna play again?"
-        gameControlEl.textContent = "Play again"
-        isAlive = false
-    } else if (game.dealerSum > 21) {
-        playerStatusEl.textContent = "Dealer busts! You win! Wanna play again?"
-        gameControlEl.textContent = "Play again"
-        isAlive = false
+betMinus10El.addEventListener("click", function() {
+    if (currentBet >= 10 && gameInfo.bettingAllowed) {
+        currentBet -= 10
+        betAmountEl.textContent = "$" + currentBet
     }
-}
+})
+
+betMinus25El.addEventListener("click", function() {
+    if (currentBet >= 25 && gameInfo.bettingAllowed) {
+        currentBet -= 25
+        betAmountEl.textContent = "$" + currentBet
+    }
+})
+
+betConfirmEl.addEventListener("click", function() {
+    bettingConfirm()
+})
