@@ -4,7 +4,8 @@ const playerCardsEl = document.getElementById("player-cards")
 const dealerCardsEl = document.getElementById("dealer-cards")
 const totalEl = document.getElementById("total-el")
 const dealerTotalEl = document.getElementById("dealer-total")
-const gameControlEl = document.getElementById("game-control")
+const gameStartEl = document.getElementById("game-start-el")
+const hitEl = document.getElementById("hit-el")
 const standEl = document.getElementById("stand-el")
 // bet Elements
 const betAmountEl = document.getElementById("bet-amount")
@@ -15,6 +16,7 @@ const betMinus10El = document.getElementById("bet-minus-10")
 const betMinus25El = document.getElementById("bet-minus-25")
 const betConfirmEl = document.getElementById("bet-confirm")
 const betAllInEl = document.getElementById("bet-all-in")
+const rubberDuckEl = document.getElementById("rubberduck")
 
 // Game Info
 let gameInfo = {
@@ -23,9 +25,16 @@ let gameInfo = {
  sum: 0,
  dealerSum: 0,
  renderWinCondition: "",
- playerState: "",
  bettingAllowed: false,
+ balance: 100,
+ currentBet: 0
 }
+
+const deck = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"]
+
+hitEl.style = "display: none;"
+betAmountEl.textContent = "$" + gameInfo.currentBet
+balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
 
 // Game
 function createGame() {
@@ -49,19 +58,24 @@ function createGame() {
 function waitingState() {
     gameInfo.bettingAllowed = true
     return {
+        enter (setState) {
+            gameStartEl.style = "display: inline-block;"
+            hitEl.style = "display: none;"
+        },
         async startGame(setState) {
             bettingConfirm()
             playerStatusEl.textContent = "Game started"
-            gameControlEl.textContent = "Hit"
+            gameStartEl.style = "display: none;"
+            hitEl.style = "display: inline-block;"
  
             gameInfo.playerCards = [randomCard(), randomCard()]
-            gameInfo.sum = gameInfo.playerCards[0] + gameInfo.playerCards[1]
+            gameInfo.sum = handValue(gameInfo.playerCards)
             totalEl.textContent = "Total: " + gameInfo.sum
             playerCardsEl.textContent = gameInfo.playerCards.join(", ")
 
             gameInfo.dealerCards = [randomCard()]
             dealerCardsEl.textContent = gameInfo.dealerCards.join(", ")
-            gameInfo.dealerSum = gameInfo.dealerCards[0]
+            gameInfo.dealerSum = handValue(gameInfo.dealerCards)
             dealerTotalEl.textContent = "Total: " + gameInfo.dealerSum + "+"
 
             await slowDown(500)
@@ -83,7 +97,7 @@ function playerTurnState() {
             playerStatusEl.textContent = "Player hits"
             const newCard = randomCard()
             gameInfo.playerCards.push(newCard)
-            gameInfo.sum += newCard
+            gameInfo.sum = handValue(gameInfo.playerCards)
             totalEl.textContent = "Total: " + gameInfo.sum
             playerCardsEl.textContent = gameInfo.playerCards.join(", ")
             
@@ -102,10 +116,10 @@ function dealerTurnState() {
         async enter(setState) {
             playerStatusEl.textContent = "Player stands"
             await slowDown(1000)
-            playerStatusEl.textContent = "dealer's turn"
+            playerStatusEl.textContent = "Dealer's turn"
             const newCard = randomCard()
             gameInfo.dealerCards.push(newCard)
-            gameInfo.dealerSum += newCard
+            gameInfo.dealerSum = handValue(gameInfo.dealerCards)
             dealerCardsEl.textContent = gameInfo.dealerCards.join(", ")
             dealerTotalEl.textContent = "Total: " + gameInfo.dealerSum
 
@@ -113,7 +127,7 @@ function dealerTurnState() {
             await slowDown(1000)
             const newCard = randomCard()
             gameInfo.dealerCards.push(newCard)
-            gameInfo.dealerSum += newCard
+            gameInfo.dealerSum = handValue(gameInfo.dealerCards)
             dealerCardsEl.textContent = gameInfo.dealerCards.join(", ")
             dealerTotalEl.textContent = "Total: " + gameInfo.dealerSum
             }
@@ -128,8 +142,6 @@ function dealerTurnState() {
 function gameOverState() {
     return {
         enter(setState) {
-            playerStatusEl.textContent = "Game over"
-            gameControlEl.textContent = "Start Game"
             gameInfo.renderWinCondition = renderGame()
             setState(waitingState())
         },
@@ -141,36 +153,53 @@ function gameOverState() {
 
 // Game helper functions
 function randomCard() {
-    const randomNumber = Math.floor(Math.random() * 13) + 1
-    if (randomNumber > 10) {
-        return 10
+    const card = deck[Math.floor(Math.random() * 13)]
+    return card
+}
+
+function cardValue(card) {
+    if (card === "A") return 11
+    if (["J", "Q", "K"].includes(card)) return 10
+    return card
+}
+
+function handValue(hand) {
+    let total = 0
+    let aces = 0
+
+    for (let card of hand) {
+        let value = cardValue(card)
+        total += value
+        if (card === "A") aces++
     }
-    return randomNumber
+
+    while (total > 21 && aces > 0) {
+        total -= 10
+        aces--
+    }
+
+    return total
 }
 
 function renderGame() {
     if (gameInfo.sum > 21 || (gameInfo.sum < gameInfo.dealerSum && gameInfo.dealerSum <= 21)) {
         playerStatusEl.textContent = "You lose!"
-        gameInfo.playerState = "lost"
     } else if (gameInfo.sum === gameInfo.dealerSum) {
         playerStatusEl.textContent = "It's a tie!"
-        gameInfo.playerState = "tie"
-        balance += currentBet
+        gameInfo.balance += gameInfo.currentBet
     } else if (gameInfo.sum <= 21 && (gameInfo.sum > gameInfo.dealerSum || gameInfo.dealerSum > 21)) {
         playerStatusEl.textContent = "You win!"
-        gameInfo.playerState = "won"
-        balance += currentBet * 2
+        gameInfo.balance += gameInfo.currentBet * 2
     }
-    currentBet = 0
-    balanceAmountEl.textContent = "Balance: $" + balance
-    betAmountEl.textContent = "$" + currentBet
-    console.log(gameInfo.playerState)
+    gameInfo.currentBet = 0
+    balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
+    betAmountEl.textContent = "$" + gameInfo.currentBet
 }
 
 function bettingConfirm() {
-    if (currentBet > 0 && gameInfo.bettingAllowed) {
-        balance -= currentBet
-        balanceAmountEl.textContent = "Balance: $" + balance
+    if (gameInfo.currentBet > 0 && gameInfo.bettingAllowed) {
+        gameInfo.balance -= gameInfo.currentBet
+        balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
         gameInfo.bettingAllowed = false
     }
 }
@@ -181,10 +210,13 @@ function slowDown (ms) {
 
 const game = createGame()
 
-// Event Listeners 
-gameControlEl.addEventListener("click", function() {
-    game.hit()
+// Event Listeners
+gameStartEl.addEventListener("click", function() {
     game.startGame()
+})
+
+hitEl.addEventListener("click", function() {
+    game.hit()
 })
 
 standEl.addEventListener("click", function() {
@@ -192,47 +224,49 @@ standEl.addEventListener("click", function() {
 })
 
 // Bet
-let balance = 100
-let currentBet = 0
- 
-betAmountEl.textContent = "$" + currentBet
-balanceAmountEl.textContent = "Balance: $" + balance
 
 betPlus10El.addEventListener("click", function() {
-    if (balance - currentBet >= 10 && gameInfo.bettingAllowed) {
-        currentBet += 10
-        betAmountEl.textContent = "$" + currentBet
+    if (gameInfo.balance - gameInfo.currentBet >= 10 && gameInfo.bettingAllowed) {
+        gameInfo.currentBet += 10
+        betAmountEl.textContent = "$" + gameInfo.currentBet
     } 
 }) 
 
 betPlus25El.addEventListener("click", function() {
-    if (balance - currentBet >= 25 && gameInfo.bettingAllowed) {
-        currentBet += 25
-        betAmountEl.textContent = "$" + currentBet
+    if (gameInfo.balance - gameInfo.currentBet >= 25 && gameInfo.bettingAllowed) {
+        gameInfo.currentBet += 25
+        betAmountEl.textContent = "$" + gameInfo.currentBet
     }
 })
 
 betMinus10El.addEventListener("click", function() {
-    if (currentBet >= 10 && gameInfo.bettingAllowed) {
-        currentBet -= 10
-        betAmountEl.textContent = "$" + currentBet
+    if (gameInfo.currentBet >= 10 && gameInfo.bettingAllowed) {
+        gameInfo.currentBet -= 10
+        betAmountEl.textContent = "$" + gameInfo.currentBet
     }
 })
 
 betMinus25El.addEventListener("click", function() {
-    if (currentBet >= 25 && gameInfo.bettingAllowed) {
-        currentBet -= 25
-        betAmountEl.textContent = "$" + currentBet
+    if (gameInfo.currentBet >= 25 && gameInfo.bettingAllowed) {
+        gameInfo.currentBet -= 25
+        betAmountEl.textContent = "$" + gameInfo.currentBet
     }
 })
 
 betAllInEl.addEventListener("click", function() {
     if (gameInfo.bettingAllowed) {
-        currentBet = balance
-        betAmountEl.textContent = "$" + currentBet
+        gameInfo.currentBet = gameInfo.balance
+        betAmountEl.textContent = "$" + gameInfo.currentBet
     }
 })
 
 betConfirmEl.addEventListener("click", function() {
     bettingConfirm()
+})
+
+rubberDuckEl.addEventListener("click", function() {
+    if (gameInfo.currentBet === 0 && gameInfo.balance === 0) {
+        gameInfo.balance = 100
+        balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
+    }
 })

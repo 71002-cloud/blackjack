@@ -1,3 +1,4 @@
+
 body {
     background-image: url('assets/images/table.png');
     background-size: cover;
@@ -27,8 +28,17 @@ button {
 .game-area {
     display: flex;
     justify-content: space-between;
-    flex-direction: row;
+    flex-wrap: wrap;
     margin-top: 20px;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.status {
+    flex-basis: 100%;
+    order: 1;
+    text-align: center;
+    margin: 1rem 0;
 }
 
 .hand {
@@ -39,16 +49,12 @@ button {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-.status {
-    margin: auto;
-}
-
 .controls {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 250px;
+    margin-top: 240px;
 }
 
 .bet {
@@ -66,4 +72,35 @@ button {
 button:hover {
     background-color: #ffdb4d;
     cursor: pointer;
+}
+
+.duck-container {
+    position: absolute;
+    right: 1.2rem;
+    bottom: 1.2rem;
+    bottom: -0%;
+}
+
+#rubberduck {
+    background-image: url("assets/images/rubberduck-tophat.png");
+    background-size: cover;
+    background-position: center;
+    background-color: transparent;
+    width: 10vw;
+    aspect-ratio: 12/15;
+    max-width: 12rem; 
+    max-height: 15rem;
+}
+
+@media (max-width: 800px) {
+    .duck-container {
+        position: static;
+        margin: 1rem auto 2rem;
+        width: fit-content;
+    }
+
+    .game-area {
+        flex-direction: column;
+        align-items: center;
+    }
 }

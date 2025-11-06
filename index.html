@@ -4,6 +4,7 @@
     <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <link rel="stylesheet" type="text/css" href="styles.css"> 
+    <link rel="icon" type="image/x-icon" href="assets/images/rubberduck-tophat.png">
     <script type="module" src="script.js" defer></script> 
 </head> 
 
@@ -29,7 +30,8 @@
 
     <div class="controls"> 
         <div class="game-buttons"> 
-        <button id="game-control">Start Game</button> 
+        <button id="game-start-el">Start Game</button> 
+        <button id="hit-el">Hit</button>
         <button id="stand-el">Stand</button> 
         </div> 
         <div class="bet"> 
@@ -42,7 +44,12 @@
             <button id="bet-confirm">Bet</button> 
         </div> 
     </div> 
+    
     <div class="balance"> 
         <h2 class="balance" id="balance-amount-el">Balance: $100</h2> 
-    </div> 
+    </div>
+
+    <div class="duck-container">
+        <button id="rubberduck"></button>
+    </div>
 </body> 
