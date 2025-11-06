@@ -7,7 +7,7 @@ const dealerTotalEl = document.getElementById("dealer-total")
 const gameStartEl = document.getElementById("game-start-el")
 const hitEl = document.getElementById("hit-el")
 const standEl = document.getElementById("stand-el")
-// bet Elements
+// Bet Elements
 const betAmountEl = document.getElementById("bet-amount")
 const balanceAmountEl = document.getElementById("balance-amount-el")
 const betPlus10El = document.getElementById("bet-plus-10")
@@ -17,6 +17,8 @@ const betMinus25El = document.getElementById("bet-minus-25")
 const betConfirmEl = document.getElementById("bet-confirm")
 const betAllInEl = document.getElementById("bet-all-in")
 const rubberDuckEl = document.getElementById("rubberduck")
+// Confetti Elements
+const canvas = document.getElementById('confettiCanvas');
 
 // Game Info
 let gameInfo = {
@@ -189,7 +191,8 @@ function renderGame() {
         gameInfo.balance += gameInfo.currentBet
     } else if (gameInfo.sum <= 21 && (gameInfo.sum > gameInfo.dealerSum || gameInfo.dealerSum > 21)) {
         playerStatusEl.textContent = "You win!"
-        gameInfo.balance += gameInfo.currentBet * 2
+        gameInfo.balance += gameInfo.currentBet * 2,
+        confettiLauncher()
     }
     gameInfo.currentBet = 0
     balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
@@ -197,7 +200,7 @@ function renderGame() {
 }
 
 function bettingConfirm() {
-    if (gameInfo.currentBet > 0 && gameInfo.bettingAllowed) {
+    if (gameInfo.bettingAllowed) {
         gameInfo.balance -= gameInfo.currentBet
         balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
         gameInfo.bettingAllowed = false
@@ -222,8 +225,6 @@ hitEl.addEventListener("click", function() {
 standEl.addEventListener("click", function() {
     game.stand()
 })
-
-// Bet
 
 betPlus10El.addEventListener("click", function() {
     if (gameInfo.balance - gameInfo.currentBet >= 10 && gameInfo.bettingAllowed) {
@@ -260,13 +261,74 @@ betAllInEl.addEventListener("click", function() {
     }
 })
 
-betConfirmEl.addEventListener("click", function() {
-    bettingConfirm()
-})
-
 rubberDuckEl.addEventListener("click", function() {
     if (gameInfo.currentBet === 0 && gameInfo.balance === 0) {
         gameInfo.balance = 100
         balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
     }
 })
+
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const confettiImg = new Image();
+confettiImg.src = 'assets/images/rubberduck-tophat.png';
+const confetti = [];
+
+class Particle {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height - canvas.height;
+        this.size = Math.random() * 30 + 20;
+        this.speed = Math.random() * 10 + 2;
+        this.gravity = 0.1;
+        this.rotation = Math.random() * 2 * Math.PI;
+        this.rotationSpeed = Math.random() * 0.1 - 0.05;
+    }
+
+    update() {
+        this.y += this.speed;
+        this.x += Math.sin(this.rotation) * 2;
+        this.rotation += this.rotationSpeed;
+        if (this.y > canvas.height) this.y = -this.size;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.drawImage(confettiImg, -this.size / 2, -this.size / 2, this.size, this.size);
+        ctx.restore();
+    }
+}
+
+function createConfetti(count) {
+    for (let i = 0; i < count; i++) {
+        confetti.push(new Particle());
+    }
+}
+
+function animate(duration) {
+        const startTime = performance.now();
+        function loop(currentTime) {
+            const elapsed = currentTime - startTime;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confetti.forEach(p => {
+            p.update();
+            p.draw();
+            });
+
+            if (elapsed < duration) {
+            requestAnimationFrame(loop);
+            } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+    requestAnimationFrame(loop);
+}
+
+function confettiLauncher() {
+        createConfetti(100);
+        animate(3500);
+}

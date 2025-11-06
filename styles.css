@@ -1,6 +1,6 @@
 
 body {
-    background-image: url('assets/images/table.png');
+    background-image: url("assets/images/table.png");
     background-size: cover;
     color: white;
     text-align: center;
@@ -92,6 +92,14 @@ button:hover {
     max-height: 15rem;
 }
 
+#confettiCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+}
+
 @media (max-width: 800px) {
     .duck-container {
         position: static;
@@ -102,5 +110,9 @@ button:hover {
     .game-area {
         flex-direction: column;
         align-items: center;
+    }
+
+    .controls {
+        margin-top: 20px;
     }
 }
