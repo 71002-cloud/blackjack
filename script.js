@@ -1,3 +1,4 @@
+import imgDuckUrl from "./assets/images/rubberduck-tophat.png"
 // Game Elements 
 const playerStatusEl = document.getElementById("player-status")
 const playerCardsEl = document.getElementById("player-cards")
@@ -14,7 +15,6 @@ const betPlus10El = document.getElementById("bet-plus-10")
 const betPlus25El = document.getElementById("bet-plus-25")
 const betMinus10El = document.getElementById("bet-minus-10")
 const betMinus25El = document.getElementById("bet-minus-25")
-const betConfirmEl = document.getElementById("bet-confirm")
 const betAllInEl = document.getElementById("bet-all-in")
 const rubberDuckEl = document.getElementById("rubberduck")
 // Confetti Elements
@@ -272,7 +272,7 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const confettiImg = new Image();
-confettiImg.src = 'assets/images/rubberduck-tophat.png';
+confettiImg.src = imgDuckUrl;
 const confetti = [];
 
 class Particle {
