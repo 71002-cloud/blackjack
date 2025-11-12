@@ -20,6 +20,56 @@ const rubberDuckEl = document.getElementById("rubberduck")
 // Confetti Elements
 const canvas = document.getElementById('confettiCanvas');
 
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+
+async function signInWithEmail() {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: 'wallah@example.local',
+    password: 'rubber',
+  })
+
+  console.log(data)
+}
+
+  const itemFromStorage = localStorage.getItem("sb-sazsvscjrkwpjwsnvvtc-auth-token")
+  const itemFromStorageToNoraml = JSON.parse(itemFromStorage)
+  const id = itemFromStorageToNoraml.user.id
+
+signInWithEmail()
+
+async function getData() {
+  const { data, error } = await supabase
+    .from('players')
+    .select('balance')
+
+  if (error) {
+    console.error('Error fetching data:', error)
+    return
+  }
+
+  return data[0].balance
+}
+
+async function updateBal() {
+  const { data, error } = await supabase
+    .from('players')
+    .update({ balance: gameInfo.balance})
+    .eq('user_id', id)
+    .select('*')
+
+
+  if (error) {
+    console.error('Error fetching data:', error)
+    return
+  }
+}
+
 // Game Info
 let gameInfo = {
  playerCards: [],
@@ -28,18 +78,19 @@ let gameInfo = {
  dealerSum: 0,
  renderWinCondition: "",
  bettingAllowed: false,
- balance: 100,
+ balance: await getData(),
  currentBet: 0
 }
 
 const deck = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"]
 
-hitEl.style = "display: none;"
-betAmountEl.textContent = "$" + gameInfo.currentBet
-balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
-
 // Game
 function createGame() {
+
+    hitEl.style = "display: none;"
+    betAmountEl.textContent = "$" + gameInfo.currentBet
+    balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
+
     let state = waitingState()
 
     function setState(newState) {
@@ -197,6 +248,7 @@ function renderGame() {
     gameInfo.currentBet = 0
     balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
     betAmountEl.textContent = "$" + gameInfo.currentBet
+    updateBal()
 }
 
 function bettingConfirm() {
@@ -265,6 +317,7 @@ rubberDuckEl.addEventListener("click", function() {
     if (gameInfo.currentBet === 0 && gameInfo.balance === 0) {
         gameInfo.balance = 100
         balanceAmountEl.textContent = "Balance: $" + gameInfo.balance
+        updateBal()
     }
 })
 
