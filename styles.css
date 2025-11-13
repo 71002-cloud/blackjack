@@ -100,6 +100,53 @@ button:hover {
     z-index: -1;
 }
 
+.login-body {
+    height: 98vh;
+    display: grid;
+    place-content: center;
+}
+
+.login {
+    min-width: 15rem;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px solid goldenrod;
+    border-radius: 10px;
+    padding: 6rem;
+}
+
+input {
+    align-items: center;
+    border-radius: 5px;
+    border: none;
+    padding: 0.4rem;
+}
+
+.signinform-btn {
+    display: block;
+    border-radius: 5px;
+    border: none;
+    padding: 0.4rem;
+    align-items: center;
+}
+
+#signup-btn {
+    display: none;
+}
+
+.vigtig-text {
+    font-size: 1.2rem;
+}
+
+#signup {
+    cursor: pointer;
+    text-decoration: underline;
+    color: goldenrod;
+}
+
 @media (max-width: 800px) {
     .duck-container {
         position: static;
