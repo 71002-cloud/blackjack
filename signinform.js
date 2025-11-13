@@ -11,6 +11,24 @@ export async function initSigninform() {
 
     let state = "login"
 
+    signupBtn.addEventListener("click", async function() {
+        const emailFromUser = emailEl.value
+        const passwordFromUser = passwordEl.value
+
+        async function singUpWithEmail() {
+            const { data, error } = await supabase.auth.signUp({
+                email: emailFromUser,
+                password: passwordFromUser,
+                })
+
+
+            console.log(data)
+
+        }
+
+        singUpWithEmail()
+    })
+
     loginBtn.addEventListener("click", function() {
         const emailFromUser = emailEl.value
         const passwordFromUser = passwordEl.value
@@ -23,7 +41,6 @@ export async function initSigninform() {
 
         console.log(data)
         }
-
         signInWithEmail()
     })
 
